@@ -10,19 +10,24 @@ import {
   AuthResponse, 
   ConfirmEmailRequest, 
   ForgotPasswordRequest, 
+  GoogleLoginRequest, 
   LoginRequest, 
   LoginResponseData, 
-  RegisterRequest 
+  RefreshTokenRequest, 
+  RegisterRequest, 
+  ResetPasswordRequest
 } from '../models/auth';
 import { environment } from '../../../../environments/environment';
 
 /**
  * AuthService
  * ----------------------------------------------------------------------
- * This service acts as the central hub for:
- * 1. Communicating with the Backend Auth API.
- * 2. Managing the User's Login State (currentUser$).
- * 3. Handling JWT Token storage and decoding.
+ * Central service for handling Authentication.
+ * Features:
+ * - Login (Standard & Google)
+ * - Registration & Password Management
+ * - JWT Token Management (Access & Refresh Tokens)
+ * - State Management (User Roles & Login Status)
  * ----------------------------------------------------------------------
  */
 @Injectable({
@@ -33,55 +38,109 @@ export class AuthService {
   // --- Dependencies ---
   private http = inject(HttpClient);
   private router = inject(Router);
-  private platformId = inject(PLATFORM_ID); // To check if we are in Browser or Server
+  private platformId = inject(PLATFORM_ID); 
   
   // --- Configuration ---
   private apiUrl = `${environment.apiBaseUrl}/auth`;
+  private oauthUrl = `${environment.apiBaseUrl}/oauth`; 
+  
+  // LocalStorage Keys
   private tokenKey = 'nyc360_token'; 
+  private refreshTokenKey = 'nyc360_refresh_token'; 
 
   // --- State Management ---
-  // BehaviorSubject holds the current value and emits it to new subscribers.
+  // Stores current user info (email, role) for the app to use
   public currentUser$ = new BehaviorSubject<any>(null);
 
   constructor() {
-    // Attempt to load the user from storage when the app starts
+    // Initialize state on app start
     this.loadUserFromToken();
   }
 
+
   // ============================================================
-  // SECTION 1: API CALLS (HTTP)
+  // SECTION 1: LOGIN & AUTHENTICATION API
   // ============================================================
 
   /**
-   * Login Request
-   * Posts credentials to the server. If successful, saves the token
-   * and updates the application state.
+   * Google Backend Login
+   * Sends the Google ID Token to backend to exchange for our App Tokens.
    */
-  login(data: LoginRequest): Observable<AuthResponse<LoginResponseData>> {
-    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/login`, data)
+  loginWithGoogleBackend(idToken: string): Observable<AuthResponse<LoginResponseData>> {
+    const payload: GoogleLoginRequest = { idToken: idToken };
+    
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.oauthUrl}/google`, payload)
       .pipe(
         tap(res => {
           if (res.isSuccess && res.data) {
-            // 1. Save Token to LocalStorage
-            this.saveToken(res.data.accessToken);
-            // 2. Decode Token and update currentUser$
+            // Save Access AND Refresh Tokens
+            this.saveTokens(res.data.accessToken, res.data.refreshToken || '');
             this.loadUserFromToken();
           }
         })
       );
   }
 
+
+  /**
+   * Standard Login Request
+   * Posts email/password to backend.
+   */
+  login(data: LoginRequest): Observable<AuthResponse<LoginResponseData>> {
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/login`, data)
+      .pipe(
+        tap(res => {
+          if (res.isSuccess && res.data) {
+            // Save Access AND Refresh Tokens
+            this.saveTokens(res.data.accessToken, res.data.refreshToken);
+            this.loadUserFromToken();
+          }
+        })
+      );
+  }
+
+
+  /**
+   * Refresh Token API
+   * Called by Interceptor when Access Token expires (401).
+   */
+  refreshToken(data: RefreshTokenRequest): Observable<AuthResponse<LoginResponseData>> {
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/refresh-token`, data)
+      .pipe(
+        tap(res => {
+          if (res.isSuccess && res.data) {
+            // Update tokens in storage
+            this.saveTokens(res.data.accessToken, res.data.refreshToken);
+          }
+        })
+      );
+  }
+
+
+  /**
+   * Helper to get Google Redirect URL (for direct redirects)
+   */
+  getGoogleAuthUrl(): string {
+    return `${this.apiUrl}/google-login`; 
+  }
+
+
+  // ============================================================
+  // SECTION 2: ACCOUNT MANAGEMENT API
+  // ============================================================
+
   /**
    * Register Request
-   * Creates a new account (User or Organization).
+   * Creates a new user account.
    */
   register(data: RegisterRequest): Observable<AuthResponse<any>> {
     return this.http.post<AuthResponse<any>>(`${this.apiUrl}/register`, data);
   }
 
+
   /**
-   * Email Confirmation
-   * Maps the 'email' from the URL to 'userId' as required by Swagger.
+   * Confirm Email
+   * Verifies user email via token sent to email.
    */
   confirmEmail(data: ConfirmEmailRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/confirm-email`, {
@@ -90,96 +149,129 @@ export class AuthService {
     });
   }
 
+
   /**
    * Forgot Password
-   * Sends a reset link to the user's email.
+   * Initiates the password recovery process.
    */
   forgotPassword(data: ForgotPasswordRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/forgot-password`, data);
   }
 
+
+  /**
+   * Reset Password
+   * Sets a new password using the recovery token.
+   */
+  resetPassword(data: ResetPasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/password-reset`, data);
+  }
+
+
   // ============================================================
-  // SECTION 2: STATE MANAGEMENT (Logout & Roles)
+  // SECTION 3: STATE & ROLE MANAGEMENT
   // ============================================================
 
   /**
    * Logout
-   * Clears the token from storage, resets the state, and redirects to login.
+   * Clears tokens and redirects to login.
    */
   logout() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.refreshTokenKey);
     }
     this.currentUser$.next(null);
-    this.router.navigate(['/Login']);
+    this.router.navigate(['/Login']); 
   }
+
 
   /**
    * Check if User is Logged In
-   * Returns true if a user object exists in the state.
    */
   isLoggedIn(): boolean {
     return !!this.currentUser$.value;
   }
 
+
   /**
    * Check Role
-   * Checks if the current user possesses a specific role (e.g., 'SuperAdmin').
-   * Handles cases where roles might be a string or an array.
+   * Verifies if the current user has a specific role (e.g. 'SuperAdmin').
    */
   hasRole(targetRole: string): boolean {
     const user = this.currentUser$.value;
     if (!user || !user.role) return false;
 
-    // Check if user.role is an array or a single string
     if (Array.isArray(user.role)) {
       return user.role.includes(targetRole);
     }
     return user.role === targetRole;
   }
 
+
   // ============================================================
-  // SECTION 3: HELPERS (Token Handling)
+  // SECTION 4: TOKEN HELPERS (Storage & Decoding)
   // ============================================================
 
   /**
-   * Save Token
-   * Safely saves the token to LocalStorage (Browser only).
+   * Save Tokens
+   * Stores both Access and Refresh tokens in LocalStorage.
    */
-  private saveToken(token: string) {
+  private saveTokens(accessToken: string, refreshToken: string) {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.tokenKey, token);
+      localStorage.setItem(this.tokenKey, accessToken);
+      if (refreshToken) {
+        localStorage.setItem(this.refreshTokenKey, refreshToken);
+      }
     }
   }
 
+
+  /**
+   * Get Access Token (Public for Interceptor)
+   */
+  getToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.tokenKey);
+    }
+    return null;
+  }
+
+
+  /**
+   * Get Refresh Token (Public for Interceptor)
+   */
+  getRefreshToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.refreshTokenKey);
+    }
+    return null;
+  }
+
+
   /**
    * Load User From Token
-   * 1. Retrieves token from storage.
-   * 2. Decodes the JWT.
-   * 3. Maps ASP.NET specific claim names to simple names (email, role).
-   * 4. Updates the currentUser$ BehaviorSubject.
+   * Decodes JWT and updates the behavior subject.
    */
   private loadUserFromToken() {
-    // Guard: Do not run this on the Server (SSR)
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const token = localStorage.getItem(this.tokenKey);
+    const token = this.getToken();
     
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
 
-        // Map Claims: ASP.NET Identity uses long URLs for claim keys
+        // Map ASP.NET Identity Claims to simple keys
         const user = {
           email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
           role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
         };
 
-        // Emit new user state
         this.currentUser$.next(user);
       } catch (e) {
         console.error('Invalid Token:', e);
-        this.logout(); // If token is corrupted, logout
+        this.logout();
       }
     } else {
       this.currentUser$.next(null);

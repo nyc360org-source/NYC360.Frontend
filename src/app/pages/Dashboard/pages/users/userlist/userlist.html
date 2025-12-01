@@ -5,10 +5,7 @@
       <h2>Users Management</h2>
       <p>Total Users: <span class="highlight">{{ totalCount }}</span></p>
     </div>
-    <div class="search-wrapper">
-      <i class="bi bi-search"></i>
-      <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Search users..." class="search-input">
-    </div>
+
   </div>
 
   <div *ngIf="isLoading" class="loading-state">

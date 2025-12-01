@@ -1,10 +1,8 @@
-// src/app/pages/Public/Auth/models/auth.ts
-
 // Request model for Registration
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
-  username: string; // Added username field
+  username: string;
   email: string;
   password: string;
   isOrganization: boolean;
@@ -16,12 +14,7 @@ export interface LoginRequest {
   password: string;
 }
 
-// Data received inside "data" property on successful login
-export interface LoginResponseData {
-  accessToken: string;
-  refreshToken: string;
-  twoFactorRequired: boolean;
-}
+
 
 // Request model for Forgot Password
 export interface ForgotPasswordRequest {
@@ -29,17 +22,37 @@ export interface ForgotPasswordRequest {
 }
 
 // Generic API Response Wrapper
-// <T> allows us to specify what kind of data is returned (e.g., LoginData or null)
 export interface AuthResponse<T = any> {
   isSuccess: boolean;
-  data: T; 
+  data: T;
   error?: {
-    code: string;
-    message: string;
+    code?: string;
+    message?: string;
   } | null;
 }
 
 export interface ConfirmEmailRequest {
-  email: string; // القيمة القادمة من الرابط
-  token: string; // التوكن القادم من الرابط
+  email: string;
+  token: string;
+}
+
+export interface GoogleLoginRequest {
+  idToken: string;
+}
+export interface ResetPasswordRequest {
+  email: string;
+  token: string;
+  newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// Update LoginResponseData if not already updated
+export interface LoginResponseData {
+  accessToken: string;
+  refreshToken: string; // Ensure this exists
+  twoFactorRequired: boolean;
 }

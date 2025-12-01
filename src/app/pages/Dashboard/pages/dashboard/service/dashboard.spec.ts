@@ -1,14 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-// FIX: Import 'AuthService', not 'Auth'
-import { AuthService } from './auth'; 
+import { Dashboard } from './dashboard';
 
-describe('AuthService', () => {
-  let service: AuthService;
+describe('Dashboard', () => {
+  let service: Dashboard;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(AuthService);
+    service = TestBed.inject(Dashboard);
   });
 
   it('should be created', () => {

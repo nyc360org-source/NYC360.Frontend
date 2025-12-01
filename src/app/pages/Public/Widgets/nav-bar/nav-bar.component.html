@@ -22,8 +22,14 @@
         <a routerLink="/Signup" class="subscribe-button">Sign Up</a>
       </ng-container>
 
-      <button *ngIf="isLoggedIn" (click)="logout()" class="auth-link">Logout</button>
-    </div>
+<div class="d-flex align-items-center gap-2" *ngIf="isLoggedIn">
+    
+    <a routerLink="/profile" class="profile-btn" title="My Profile">
+      <i class="bi bi-person-circle fs-4 text-white"></i>
+    </a>
+
+    <button (click)="logout()" class="auth-link">Logout</button>
+  </div>    </div>
   </div>
 
   <div class="mobile-menu" [class.open]="isMenuOpen">
