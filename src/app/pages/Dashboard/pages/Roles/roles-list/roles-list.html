@@ -5,7 +5,11 @@
       <h2>Roles & Permissions</h2>
       <p>Manage system roles and access levels.</p>
     </div>
-    </div>
+    
+    <a routerLink="/admin/roles/create" class="btn-add">
+      <i class="bi bi-plus-lg"></i> Add New Role
+    </a>
+  </div>
 
   <div *ngIf="isLoading" class="state-container">
     <div class="spinner-border text-gold" role="status"></div>
@@ -29,9 +33,15 @@
           <span class="perm-count">{{ role.permissions.length }} Permissions</span>
         </div>
         
-        <button class="btn-delete" (click)="onDelete(role)" title="Delete Role">
-          <i class="bi bi-trash"></i>
-        </button>
+        <div class="actions-group">
+          <a [routerLink]="['/admin/roles/edit', role.id]" class="btn-icon edit" title="Edit Permissions">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+          
+          <button class="btn-icon delete" (click)="onDelete(role)" title="Delete Role">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
       </div>
 
       <div class="divider"></div>

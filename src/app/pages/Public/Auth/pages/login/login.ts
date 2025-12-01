@@ -10,7 +10,7 @@ import { LoginRequest } from '../../models/auth';
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.scss'] // نفس ملف الستايل بتاع Signup
+  styleUrls: ['./login.scss'] 
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -36,10 +36,8 @@ export class LoginComponent {
 
         if (response.isSuccess) {
           console.log('Login Success', response.data);
-          // 3. توجيه للداشبورد (أو الصفحة الرئيسية حالياً)
           this.router.navigate(['']); 
         } else {
-          // عرض رسالة الخطأ القادمة من الباك إند
           this.errorMessage = response.error?.message || 'Login failed. Please check your credentials.';
         }
       },

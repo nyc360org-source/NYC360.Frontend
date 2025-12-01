@@ -1,15 +1,23 @@
 // src/app/core/models/role.models.ts
 
 export interface Role {
-  id: number; // Required for deletion
+  id: number;
   name: string;
   permissions: string[];
 }
 
-// Generic API Response Wrapper
-export interface RolesResponse {
+/**
+ * FIXED: Payload must include 'id' and 'name' to satisfy backend validation.
+ */
+export interface UpdateRolePermissionsRequest {
+  id: number;    // <--- Added
+  name: string;  // <--- Added (Crucial to fix the error)
+  permissions: string[];
+}
+
+export interface RolesResponse<T = any> {
   isSuccess: boolean;
-  data: Role[];
+  data: T; 
   error: {
     code: string;
     message: string;

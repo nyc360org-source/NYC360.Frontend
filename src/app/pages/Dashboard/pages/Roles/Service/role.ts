@@ -1,26 +1,58 @@
 // src/app/core/services/roles.service.ts
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { RolesResponse } from '../models/role';
+import { Role, RolesResponse, UpdateRolePermissionsRequest } from '../models/role';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RolesService {
   private http = inject(HttpClient);
-  // Base URL: https://nyc360.runasp.net/api/roles-dashboard
   private baseUrl = `${environment.apiBaseUrl}/roles-dashboard`;
 
   // --- Get All Roles ---
-  getAllRoles(): Observable<RolesResponse> {
-    return this.http.get<RolesResponse>(`${this.baseUrl}/all`);
+  getAllRoles(): Observable<RolesResponse<Role[]>> {
+    return this.http.get<RolesResponse<Role[]>>(`${this.baseUrl}/all`);
+  }
+
+  // --- Get Single Role ---
+  getRoleById(id: number): Observable<RolesResponse<Role>> {
+    return this.http.get<RolesResponse<Role>>(`${this.baseUrl}/${id}`);
+  }
+
+  // --- Create Role ---
+  createRole(roleName: string, permissions: string[]): Observable<RolesResponse<Role>> {
+    const payload = { 
+      name: roleName, 
+      permissions: permissions 
+    };
+    return this.http.post<RolesResponse<Role>>(`${this.baseUrl}/create`, payload);
+  }
+
+  /**
+   * UPDATE Role Permissions
+   * FIXED: Now accepts the full payload (id, name, permissions)
+   */
+  updateRolePermissions(id: number, payload: UpdateRolePermissionsRequest): Observable<RolesResponse<Role>> {
+    return this.http.put<RolesResponse<Role>>(`${this.baseUrl}/edit/${id}`, payload);
   }
 
   // --- Delete Role ---
-  // API requires ID in the path: /delete/{roleId}
   deleteRole(roleId: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/delete/${roleId}`);
+  }
+
+  // --- Get System Permissions (Mock) ---
+  getAllPermissions(): Observable<string[]> {
+    const mockPermissions = [
+      "Permissions.Roles.View", "Permissions.Roles.Create", "Permissions.Roles.Edit", "Permissions.Roles.Delete",
+      "Permissions.Users.View", "Permissions.Users.Edit", "Permissions.Users.Delete", 
+      "Permissions.Users.UpdateRoles", "Permissions.Users.UpdatePermissions",
+      "Permissions.Posts.View", "Permissions.Posts.Create", "Permissions.Posts.Edit", "Permissions.Posts.Delete"
+    ];
+    return of(mockPermissions);
   }
 }

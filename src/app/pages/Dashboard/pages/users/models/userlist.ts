@@ -1,11 +1,16 @@
-// src/app/core/models/user.models.ts
+// src/app/pages/Dashboard/pages/users/models/userlist.ts
 
 export interface User {
   id: number;
+  firstName: string;
+  lastName: string;
   email: string;
-  fullName: string;
   emailConfirmed: boolean;
-  roles: string[];
+  bio?: string;
+  avatarUrl?: string;
+  role: string; // Single string role
+  lockoutEnabled: boolean;
+  lockoutEnd?: string;
 }
 
 export interface UsersResponse {
@@ -15,5 +20,10 @@ export interface UsersResponse {
   pageSize: number;
   totalCount: number;
   totalPages: number;
-  error: any;
+  error: { code: string; message: string } | null;
+}
+
+// Fixed: Payload for updating a single role
+export interface UpdateUserRoleRequest {
+  roleName: string;
 }

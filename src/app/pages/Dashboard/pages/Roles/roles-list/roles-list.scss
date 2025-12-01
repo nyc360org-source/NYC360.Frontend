@@ -1,4 +1,4 @@
-// --- Variables (Light Theme) ---
+// --- Variables ---
 $bg-page: #f8f9fa;
 $card-bg: #ffffff;
 $text-main: #333;
@@ -6,6 +6,7 @@ $text-muted: #6c757d;
 $gold: #DAA520;
 $border: #e9ecef;
 $danger: #dc3545;
+$primary: #0d6efd; // Blue for Edit
 
 .page-container {
   padding: 20px;
@@ -17,34 +18,51 @@ $danger: #dc3545;
 
 // --- Header ---
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
+
   .title-section {
     h2 { font-weight: 800; color: $text-main; margin-bottom: 5px; }
     p { color: $text-muted; font-size: 0.95rem; }
   }
+
+  // Add Button Style
+  .btn-add {
+    background-color: $gold;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    &:hover { background-color: darken($gold, 10%); }
+  }
 }
 
-// --- Grid Layout ---
+// --- Grid ---
 .roles-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-
-  // Responsive: 2 columns on tablet, 3 on desktop
   @media(min-width: 768px) { grid-template-columns: repeat(2, 1fr); }
   @media(min-width: 1200px) { grid-template-columns: repeat(3, 1fr); }
 }
 
-// --- Role Card ---
+// --- Card ---
 .role-card {
   background: $card-bg;
   border: 1px solid $border;
   border-radius: 12px;
   padding: 20px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: 0.2s;
   display: flex;
   flex-direction: column;
-  height: 100%; // Make cards same height
+  height: 100%;
 
   &:hover {
     transform: translateY(-5px);
@@ -52,7 +70,6 @@ $danger: #dc3545;
     border-color: rgba($gold, 0.5);
   }
 
-  // Header Row
   .card-header-row {
     display: flex;
     align-items: center;
@@ -60,15 +77,10 @@ $danger: #dc3545;
     margin-bottom: 15px;
 
     .role-icon {
-      width: 45px;
-      height: 45px;
+      width: 45px; height: 45px;
       background: linear-gradient(135deg, $gold, lighten($gold, 25%));
-      color: #fff;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
+      color: #fff; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
     }
 
     .role-title {
@@ -77,63 +89,50 @@ $danger: #dc3545;
       .perm-count { font-size: 0.8rem; color: $text-muted; }
     }
 
-    .btn-delete {
-      background: #fff;
-      border: 1px solid $border;
-      color: $text-muted;
-      width: 35px;
-      height: 35px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
+    // Actions Group
+    .actions-group {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 8px;
 
-      &:hover {
-        background: $danger;
-        color: #fff;
-        border-color: $danger;
+      .btn-icon {
+        width: 35px; height: 35px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid $border;
+        background: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none; // For <a> tags
+
+        &.edit {
+          color: $primary;
+          &:hover { background: $primary; color: #fff; border-color: $primary; }
+        }
+
+        &.delete {
+          color: $text-muted;
+          &:hover { background: $danger; color: #fff; border-color: $danger; }
+        }
       }
     }
   }
 
   .divider { height: 1px; background: $border; margin-bottom: 15px; }
 
-  // Permissions Section
   .permissions-section {
     .section-title { font-size: 0.85rem; font-weight: 600; color: $text-muted; margin-bottom: 10px; text-transform: uppercase; }
-    
     .tags-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      max-height: 150px; // Limit height if too many permissions
-      overflow-y: auto; // Scroll if needed
-
-      .perm-tag {
-        font-size: 0.75rem;
-        background: #f1f3f4;
-        color: $text-main;
-        padding: 4px 10px;
-        border-radius: 4px;
-        border: 1px solid darken($border, 5%);
-      }
-
+      display: flex; flex-wrap: wrap; gap: 6px;
+      max-height: 150px; overflow-y: auto;
+      .perm-tag { font-size: 0.75rem; background: #f1f3f4; color: $text-main; padding: 4px 10px; border-radius: 4px; border: 1px solid darken($border, 5%); }
       .no-perm { font-style: italic; color: $text-muted; font-size: 0.8rem; }
     }
   }
 }
 
-// --- Loading & Empty States ---
+// --- States ---
 .state-container {
-  text-align: center;
-  padding: 40px;
-  background: $card-bg;
-  border-radius: 12px;
-  border: 1px solid $border;
-  color: $text-muted;
-  
+  text-align: center; padding: 40px; background: $card-bg; border-radius: 12px; border: 1px solid $border; color: $text-muted;
   i { font-size: 2rem; display: block; margin-bottom: 10px; }
   .spinner-border { color: $gold; }
 }

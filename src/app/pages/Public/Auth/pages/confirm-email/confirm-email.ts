@@ -58,7 +58,7 @@ export class ConfirmEmailComponent implements OnInit {
         if (res.isSuccess) {
           this.isSuccess = true;
           // Optional: Auto-redirect after 5 seconds
-          setTimeout(() => this.router.navigate(['/login']), 5000);
+          setTimeout(() => this.router.navigate(['/Login']), 5000);
         } else {
           // Backend returned 200 but logic failed (e.g., user already confirmed)
           this.handleError(res.error?.message || 'Verification failed. Please try logging in.');

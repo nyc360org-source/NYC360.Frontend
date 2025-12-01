@@ -1,22 +1,24 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { RolesService } from '../Service/role';
 import { Role } from '../models/role';
 
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './roles-list.html',
   styleUrls: ['./roles-list.scss']
 })
 export class RolesListComponent implements OnInit {
   
-  // Dependency Injection
+  // --- Dependency Injection ---
   private rolesService = inject(RolesService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
-  // State Variables
+  // --- State Variables ---
   roles: Role[] = [];
   isLoading = false;
   errorMessage = '';
@@ -25,7 +27,9 @@ export class RolesListComponent implements OnInit {
     this.loadRoles();
   }
 
-  // --- Fetch Roles from API ---
+  /**
+   * Fetch all roles from the API.
+   */
   loadRoles() {
     this.isLoading = true;
     this.errorMessage = '';
@@ -33,11 +37,11 @@ export class RolesListComponent implements OnInit {
     this.rolesService.getAllRoles().subscribe({
       next: (res) => {
         this.isLoading = false;
-        console.log('Roles API Response:', res);
+        console.log('Roles API Response:', res); // Check Console to see if 'id' exists
 
         if (res.isSuccess) {
           this.roles = res.data || [];
-          this.cdr.detectChanges(); // Force UI update
+          this.cdr.detectChanges(); 
         } else {
           this.errorMessage = res.error?.message || 'Failed to load roles.';
         }
@@ -51,29 +55,42 @@ export class RolesListComponent implements OnInit {
     });
   }
 
-  // --- Delete Role Logic ---
+  /**
+   * Delete Role Logic
+   * 1. Validates ID presence.
+   * 2. Confirms action.
+   * 3. Calls API.
+   */
   onDelete(role: Role) {
+    // SECURITY CHECK: If ID is missing, we cannot delete.
+    if (!role.id) {
+      alert(`Error: Role ID is missing for "${role.name}". Please check the Backend API response.`);
+      console.error('Missing ID for role:', role);
+      return;
+    }
+
+    // Confirmation
     if (!confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
       return;
     }
 
-    this.isLoading = true; // Show loading indicator
+    this.isLoading = true; // Show loading
     this.rolesService.deleteRole(role.id).subscribe({
       next: (res) => {
-        // Check "isSuccess" because API returns 200 OK even on logical error (like role assigned)
+        // Handle Success
         if (res.isSuccess) {
           alert('Role deleted successfully!');
           this.loadRoles(); // Refresh the list
         } else {
           this.isLoading = false;
-          // Show the specific error from backend (e.g., "Cannot delete role. Users are assigned...")
+          // Show backend specific error (e.g. "Role in use")
           alert(res.error?.message || 'Failed to delete role.');
         }
       },
       error: (err) => {
         this.isLoading = false;
         console.error(err);
-        alert('An unexpected error occurred.');
+        alert('An unexpected error occurred while deleting.');
       }
     });
   }
