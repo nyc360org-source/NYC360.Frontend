@@ -1,7 +1,7 @@
 # NYC360.Frontend / MySsrApp
 
 **NYC360 Frontend** is a fully-featured Angular 21 application with **Server-Side Rendering (SSR)** for SEO optimization and fast performance.  
-It demonstrates professional frontend development skills, including advanced UI/UX design, dual layouts for users and admins, user and role management, authentication flows, and interactive dashboards.
+It demonstrates professional frontend development skills, including advanced UI/UX design, dual layouts for users and admins, user and role management, authentication flows, interactive dashboards, and RSS feed management.
 
 ---
 
@@ -54,7 +54,16 @@ It demonstrates professional frontend development skills, including advanced UI/
 - **2-Factor Authentication (2FA)** via email  
 - Frontend fully handles tokens, session state, validation, and UI feedback  
 
-### 7. Performance & UX
+### 7. RSS Feed Management
+- **RSS feature fully implemented on frontend**:  
+  - **Add new RSS feeds** with title, URL, and category  
+  - **Edit existing RSS feeds** with live validation and updates  
+  - **Delete RSS feeds** securely with confirmation dialogs  
+  - **View RSS feed details** including recent items and metadata  
+- Dynamic rendering of RSS items using Angular components  
+- Responsive UI for feed listing, editing, and adding new feeds  
+
+### 8. Performance & UX
 - **Server-Side Rendering (SSR)** for fast page loads and SEO  
 - **Lazy Loading** for feature modules  
 - Modern, responsive, and reusable UI components  

@@ -83,6 +83,20 @@ export const routes: Routes = [
       { 
         path: 'roles/create',
         loadComponent: () => import('./pages/Dashboard/pages/Roles/role-form/role-form').then(m => m.RoleFormComponent)
+      },
+      // --- RSS Feed Management (NEW 🆕) ---
+      {
+        path: 'rss',
+        loadComponent: () => import('./pages/Dashboard/pages/RssLinks/pages/rss-list/rss-list').then(m => m.RssListComponent)
+      },
+      {
+        path: 'rss/create',
+        loadComponent: () => import('./pages/Dashboard/pages/RssLinks/pages/rss-form/rss-form').then(m => m.RssFormComponent)
+      },
+      {
+        // Note: We rely on history.state for data, so no :id needed here based on our previous logic
+        path: 'rss/edit', 
+        loadComponent: () => import('./pages/Dashboard/pages/RssLinks/pages/rss-form/rss-form').then(m => m.RssFormComponent)
       }
     ]
   },

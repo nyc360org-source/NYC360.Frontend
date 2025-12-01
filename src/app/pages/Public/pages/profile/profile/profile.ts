@@ -10,7 +10,7 @@ import { UserProfile } from '../models/profile';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
