@@ -1,0 +1,143 @@
+// متغيرات الألوان لسهولة التعديل
+$bg-color: #111111;       // خلفية داكنة جداً
+$text-color: #b0b0b0;     // لون نص رمادي فاتح
+$accent-color: #FFD700;   // اللون الذهبي المميز
+$hover-bg: #222222;       // لون الخلفية عند التحويم
+
+.footer-section {
+  background-color: $bg-color;
+  color: $text-color;
+  padding: 80px 0 30px; // مسافات واسعة تعطي شعور بالفخامة
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; // خط نظيف
+  border-top: 3px solid $accent-color; // خط علوي ذهبي جمالي
+}
+
+.footer-brand {
+  h2 {
+    color: #fff;
+    letter-spacing: 2px;
+    font-size: 2rem;
+  }
+  .highlight {
+    color: $accent-color;
+  }
+}
+
+.footer-heading {
+  color: #fff;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  
+  // خط صغير تحت العناوين
+  &::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: $accent-color;
+    margin-top: 10px;
+    transition: width 0.3s;
+  }
+  
+  &:hover::after {
+    width: 100%; // تأثير تمدد الخط عند الوقوف عليه
+  }
+}
+
+.description {
+  line-height: 1.8;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+// روابط القائمة السريعة
+.footer-links {
+  li {
+    margin-bottom: 12px;
+  }
+  
+  a {
+    color: $text-color;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+
+    &:hover {
+      color: $accent-color;
+      transform: translateX(5px); // حركة بسيطة لليمين
+    }
+    
+    i {
+      font-size: 0.8rem;
+      color: $accent-color;
+    }
+  }
+}
+
+// أزرار السوشيال ميديا
+.social-links {
+  gap: 15px;
+  
+  .social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+
+    &:hover {
+      background: $accent-color;
+      color: #000; // النص يصبح أسود عند التحويم
+      transform: translateY(-3px); // يرتفع للأعلى قليلاً
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+    }
+  }
+}
+
+// روابط الاتصال
+.contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: center; // افتراضي للموبايل
+  
+  @media (min-width: 768px) {
+    justify-content: flex-start; // بداية السطر للديسك توب
+  }
+
+  .highlight {
+    color: $accent-color;
+  }
+  
+  .contact-link {
+    color: $text-color;
+    text-decoration: none;
+    transition: color 0.3s;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+// الجزء السفلي (Copyright)
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+  
+  .bottom-link {
+    color: $text-color;
+    text-decoration: none;
+    transition: color 0.3s;
+    
+    &:hover {
+      color: $accent-color;
+    }
+  }
+}

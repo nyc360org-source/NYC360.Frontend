@@ -1,0 +1,266 @@
+/* -----------------------------------------------------------
+   1. VARIABLES & CONFIGURATION
+----------------------------------------------------------- */
+$colors: (
+  bg: #000,
+  card-bg: #111,
+  text: #fff,
+  text-muted: #888,
+  accent: #FFD700, // Gold
+  input-bg: #1a1a1a,
+  border: #333
+);
+
+@function color($key) {
+  @return map-get($colors, $key);
+}
+
+$border-radius: 8px;
+$transition-speed: 0.3s;
+
+/* -----------------------------------------------------------
+   2. LAYOUT & CONTAINER
+----------------------------------------------------------- */
+.auth-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color(bg);
+  // تأثير الإضاءة الخلفية
+  background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 70%);
+  padding: 15px; // مسافة أمان للموبايل
+}
+
+/* -----------------------------------------------------------
+   3. AUTH CARD COMPONENT
+----------------------------------------------------------- */
+.auth-card {
+  background-color: color(card-bg);
+  width: 100%;
+  max-width: 480px; // وسعت العرض قليلاً لراحة العين
+  padding: 40px;
+  border-radius: $border-radius;
+  border: 1px solid color(border);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+
+  // الخط الذهبي العلوي
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: color(accent);
+  }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 35px;
+
+  h2 {
+    color: color(text);
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  
+  p {
+    color: color(text-muted);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+/* -----------------------------------------------------------
+   4. FORM ELEMENTS
+----------------------------------------------------------- */
+.form-group {
+  margin-bottom: 1.25rem; // مسافة موحدة
+
+  label {
+    display: block;
+    color: #ccc;
+    font-size: 0.75rem; // 12px
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+// حاوية الإدخال (الذكية)
+.input-wrapper {
+  position: relative;
+  width: 100%;
+
+  // الأيقونة
+  i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 1.1rem;
+    transition: color $transition-speed ease;
+    z-index: 2;
+    pointer-events: none; // عشان الضغطة تعدي للإنبوت
+  }
+
+  // حقل الإدخال نفسه
+  input {
+    width: 100%;
+    background-color: color(input-bg);
+    border: 1px solid color(border);
+    color: color(text);
+    padding: 14px 15px 14px 45px; // 45px عشان الأيقونة
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: all $transition-speed ease;
+
+    // حالة التركيز
+    &:focus {
+      outline: none;
+      border-color: color(accent);
+      background-color: lighten(map-get($colors, input-bg), 3%);
+      box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.05); // توهج خفيف جداً
+    }
+
+    &::placeholder {
+      color: #555;
+    }
+    
+    // تعديل للحقول التي لا تحتوي على أيقونة (زي الاسم)
+    &.no-icon {
+      padding-left: 15px;
+    }
+  }
+
+  // السحر: لو الإنبوت واخد فوكس، غير لون الأيقونة اللي معاه في نفس الحاوية
+  &:focus-within i {
+    color: color(accent);
+  }
+}
+
+// Checkbox الخاص بالمنظمة
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+
+  .form-check-input {
+    background-color: color(input-bg);
+    border-color: color(border);
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    appearance: none; // إلغاء شكل المتصفح الافتراضي
+    border: 1px solid color(border);
+    border-radius: 4px;
+    position: relative;
+    
+    &:checked {
+      background-color: color(accent);
+      border-color: color(accent);
+      
+      // علامة الصح
+      &::after {
+        content: '✔';
+        position: absolute;
+        color: #000;
+        font-size: 14px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  label {
+    font-size: 0.9rem;
+    color: #ddd;
+    cursor: pointer;
+    user-select: none;
+    text-transform: none;
+    margin: 0;
+  }
+}
+
+/* -----------------------------------------------------------
+   5. BUTTONS & LINKS
+----------------------------------------------------------- */
+.btn-gold {
+  width: 100%;
+  background-color: color(accent);
+  color: #000;
+  border: none;
+  padding: 14px;
+  font-weight: 800;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all $transition-speed;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #e6c200;
+    transform: translateY(-2px); // يرتفع قليلاً
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.9rem;
+  color: color(text-muted);
+
+  a {
+    color: color(accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+  }
+}
+
+/* -----------------------------------------------------------
+   6. RESPONSIVE DESIGN (Media Queries)
+----------------------------------------------------------- */
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 25px 20px; // تقليل الحواف الداخلية في الموبايل
+  }
+
+  .card-header {
+    margin-bottom: 25px;
+    h2 { font-size: 1.5rem; }
+  }
+  
+  // جعل حقول الاسم (row col-6) تحت بعض في الشاشات الصغيرة جداً لو حبيت
+  // حالياً Bootstrap هيتصرف، لكن لو عايز تجبرهم يبقوا عمود واحد:
+  // .col-6 { width: 100%; flex: 0 0 100%; } 
+}

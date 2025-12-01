@@ -1,0 +1,84 @@
+<div class="page-container">
+  
+  <div class="page-header">
+    <div class="title-section">
+      <h2>Users Management</h2>
+      <p>Total Users: <span class="highlight">{{ totalCount }}</span></p>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-border text-warning" role="status"></div>
+    <p>Loading Users...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="empty-state text-danger" style="border-color: #dc3545;">
+    <i class="bi bi-exclamation-triangle text-danger"></i>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && users.length > 0" class="users-grid">
+    <div class="user-card" *ngFor="let user of users">
+      
+      <div class="avatar-section">
+        <div class="avatar">
+          {{ getInitials(user.fullName) }}
+        </div>
+        <div class="status-badge d-md-none" [ngClass]="{'confirmed': user.emailConfirmed, 'pending': !user.emailConfirmed}">
+           {{ user.emailConfirmed ? 'Verified' : 'Pending' }}
+        </div>
+      </div>
+
+      <div class="user-info">
+        <h3>{{ user.fullName || 'No Name' }}</h3>
+        <p class="email">{{ user.email }}</p>
+      </div>
+
+      <div class="status-badge d-none d-md-flex" [ngClass]="{'confirmed': user.emailConfirmed, 'pending': !user.emailConfirmed}">
+        <i class="bi" [ngClass]="user.emailConfirmed ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'"></i>
+        {{ user.emailConfirmed ? 'Verified' : 'Pending' }}
+      </div>
+
+      <div class="mobile-divider"></div>
+      <div class="desktop-divider"></div>
+
+      <div class="roles-section">
+        <span class="role-label mobile-label">Roles:</span>
+        <div class="roles-list">
+          <span *ngFor="let role of user.roles" class="role-badge" [class.admin]="role === 'SuperAdmin'">
+            {{ role }}
+          </span>
+          <span *ngIf="!user.roles || user.roles.length === 0" class="role-badge no-role">
+            Guest
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-icon" title="Edit"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-icon delete" title="Delete" (click)="onDelete(user)">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && users.length === 0 && !errorMessage" class="empty-state">
+    <i class="bi bi-people"></i>
+    <p>No users found.</p>
+  </div>
+
+  <div *ngIf="totalPages > 1" class="pagination-controls">
+    <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+      <i class="bi bi-chevron-left"></i> Prev
+    </button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+      Next <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+
+</div>

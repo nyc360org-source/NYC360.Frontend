@@ -1,0 +1,60 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="card-header">
+      <h2>Create Account</h2>
+      <p>Join NYC360 community today</p>
+    </div>
+<div *ngIf="errorMessage" class="alert alert-danger text-center mb-3" style="background: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 4px; padding: 10px; font-size: 14px;">
+  {{ errorMessage }}
+</div>
+    <form (ngSubmit)="onSubmit()">
+      
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="registerData.firstName" name="firstName" placeholder="John" required class="simple-input">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="registerData.lastName" name="lastName" placeholder="Doe" required class="simple-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Email Address</label>
+        <div class="input-wrapper">
+          <i class="bi bi-envelope"></i>
+          <input type="email" [(ngModel)]="registerData.email" name="email" placeholder="name@example.com" required>
+        </div>
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock"></i>
+          <input type="password" [(ngModel)]="registerData.password" name="password" placeholder="Create a strong password" required>
+        </div>
+      </div>
+
+      <div class="form-check mb-4 custom-checkbox">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="registerData.isOrganization" name="isOrganization" id="orgCheck">
+        <label class="form-check-label text-white" for="orgCheck">
+          Register as an Organization account?
+        </label>
+      </div>
+
+      <button type="submit" class="btn-gold w-100" [disabled]="isLoading">
+        <span *ngIf="!isLoading">CREATE ACCOUNT</span>
+        <span *ngIf="isLoading">Creating...</span>
+      </button>
+
+      <div class="auth-footer mt-4">
+        <p>Already a member? <a routerLink="/Login">Log In</a></p>
+      </div>
+    </form>
+  </div>
+</div>

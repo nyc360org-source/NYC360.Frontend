@@ -1,0 +1,57 @@
+<div class="page-container">
+  
+  <div class="page-header">
+    <div class="title-section">
+      <h2>Roles & Permissions</h2>
+      <p>Manage system roles and access levels.</p>
+    </div>
+    </div>
+
+  <div *ngIf="isLoading" class="state-container">
+    <div class="spinner-border text-gold" role="status"></div>
+    <p>Processing...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="state-container text-danger">
+    <i class="bi bi-exclamation-triangle"></i>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && roles.length > 0" class="roles-grid">
+    <div class="role-card" *ngFor="let role of roles">
+      
+      <div class="card-header-row">
+        <div class="role-icon">
+          <i class="bi bi-shield-lock"></i>
+        </div>
+        <div class="role-title">
+          <h3>{{ role.name }}</h3>
+          <span class="perm-count">{{ role.permissions.length }} Permissions</span>
+        </div>
+        
+        <button class="btn-delete" (click)="onDelete(role)" title="Delete Role">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="permissions-section">
+        <p class="section-title">Access Capabilities:</p>
+        <div class="tags-container">
+          <span class="perm-tag" *ngFor="let perm of role.permissions">
+            {{ perm }}
+          </span>
+          <span *ngIf="role.permissions.length === 0" class="no-perm">No permissions assigned</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && roles.length === 0 && !errorMessage" class="state-container">
+    <i class="bi bi-shield-slash"></i>
+    <p>No roles found.</p>
+  </div>
+
+</div>

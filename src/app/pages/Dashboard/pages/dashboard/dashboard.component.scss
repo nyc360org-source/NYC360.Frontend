@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1020;
+}
+
+.stat-card {
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 18px 30px rgba(0,0,0,0.06); }
+
+.card-primary { background: #0d6efd !important; }
+.card-secondary { background: #6c757d !important; }
+.card-success { background: #198754 !important; }
+.card-info { background: #0dcaf0 !important; }
+
+.stat-card .icon-circle {
+  width: 45px;
+  height: 45px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-card .icon-circle svg { color: #fff; stroke: #fff; }
+
+.chart-container {
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.03);
+}
+
+.bar-chart-container {
+  height: 300px;
+  position: relative;
+  padding: 15px;
+  border-left: 1px solid #ced4da;
+  border-bottom: 1px solid #ced4da;
+}
+.chart-bar {
+  width: 40px;
+  margin: 0 12px;
+  background-color: #0d6efd;
+  border-radius: 0.35rem 0.35rem 0 0;
+  transition: height .6s cubic-bezier(.2,.9,.2,1), background-color .15s;
+  cursor: pointer;
+}
+.chart-bar:hover { background-color: #0b5ed7; }
+
+.activity-item {
+  border-left: 3px solid #e9ecef;
+  padding-left: 1rem;
+  position: relative;
+  margin-bottom: 1rem;
+}
+.activity-item:before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  background-color: #f8f9fa;
+  border: 3px solid #ced4da;
+  border-radius: 50%;
+  z-index: 10;
+}
+.mobile-float-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  background: #212529;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.3);
+}
+
+.mobile-float-btn svg {
+  stroke: #fff;
+}
