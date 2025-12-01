@@ -1,50 +1,60 @@
+// src/app/pages/Public/Auth/pages/signup/signup.ts
+
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms'; 
 import { AuthService } from '../../Service/auth';
 import { RegisterRequest } from '../../models/auth';
+// 1. تصحيح المسار هنا (مهم جداً)
+import { CommonModule } from '@angular/common'; 
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  // الآن الأنجيولار سيتعرف على CommonModule ولن يظهر الخطأ
+  imports: [CommonModule, RouterLink, FormsModule], 
   templateUrl: './signup.html',
   styleUrls: ['./signup.scss']
 })
 export class SignupComponent {
-  // حقن السيرفس والراوتر
+  
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // استخدام الموديل لضمان تطابق البيانات
   registerData: RegisterRequest = {
     firstName: '',
     lastName: '',
+    username: '', 
     email: '',
     password: '',
     isOrganization: false
   };
 
   isLoading = false;
-  errorMessage: string | null = null; // لعرض رسالة خطأ في الـ HTML
+  errorMessage: string | null = null;
 
-  onSubmit() {
-    // 1. تفعيل وضع التحميل
+  passwordPattern = "^(?=.*[a-z])(?=.*\\d).{6,}$";
+
+  onSubmit(form: NgForm) {
+    if (form.invalid) {
+      this.errorMessage = 'Please fix the errors in the form.';
+      Object.keys(form.controls).forEach(key => {
+        form.controls[key].markAsTouched();
+      });
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = null;
 
-    // 2. استدعاء السيرفس
     this.authService.register(this.registerData).subscribe({
       next: (response) => {
         this.isLoading = false;
         
         if (response.isSuccess) {
           console.log('Registration Successful');
-          // توجيه المستخدم لصفحة تسجيل الدخول
-          this.router.navigate(['/Login']);
+          this.router.navigate(['/Login']); 
         } else {
-          // التعامل مع خطأ راجع من الباك إند (مثلاً الإيميل موجود مسبقاً)
           this.errorMessage = response.error?.message || 'Registration failed';
         }
       },
