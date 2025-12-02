@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:ssr": "ng build --configuration=production && ng run my-ssr-app:server",
+    "serve:ssr": "node dist/my-ssr-app/server/server.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:my-ssr-app": "node dist/my-ssr-app/server/server.mjs"
