@@ -40,7 +40,7 @@ $primary: #0d6efd; // Blue for Edit
     align-items: center;
     gap: 8px;
     transition: 0.2s;
-    &:hover { background-color: darken($gold, 10%); }
+    &:hover { background-color: mix(black, $gold, 10%); }
   }
 }
 
