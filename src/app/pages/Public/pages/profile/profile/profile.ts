@@ -10,34 +10,36 @@ import { UserProfile } from '../models/profile';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
 export class ProfileComponent implements OnInit {
   
+  // Expose environment to the template (HTML)
   protected readonly environment = environment;
   
-  // --- Dependencies ---
+  // --- Dependency Injection ---
   private profileService = inject(ProfileService);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
-  // --- State ---
+  // --- State Variables ---
   profile: UserProfile | null = null;
   isLoading = true;
   isSaving = false;
-  isEditMode = false; // Controls View vs Edit Mode
+  isEditMode = false; // Controls Read-Only vs Edit state
   errorMessage = '';
   
-  // --- Form ---
+  // --- Form & File Handling ---
   profileForm: FormGroup;
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
   constructor() {
+    // Initialize the form with validators
     this.profileForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
@@ -53,43 +55,75 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadProfileData();
+    this.resolveUsernameAndLoad();
   }
 
-  // --- Load Data ---
-  loadProfileData() {
-    this.isLoading = true;
-    
-    // Get logged-in user email
-    const currentUser = this.authService.currentUser$.value;
-    const email = currentUser?.email;
+  /**
+   * Determines which user profile to load.
+   * 1. Checks the URL for a username parameter.
+   * 2. If empty, falls back to the currently logged-in user's details.
+   */
+  resolveUsernameAndLoad() {
+    // 1. Try to get 'username' from the Route (e.g., /profile/john_doe)
+    let identifier = this.route.snapshot.paramMap.get('username');
 
-    if (!email) {
+    // 2. If no route param, get it from the Authenticated User
+    if (!identifier) {
+      const currentUser = this.authService.currentUser$.value;
+      if (currentUser) {
+        // 🛠️ FIX: Fallback Logic to ensure we get a valid ID
+        // Prioritize username, then email, then unique_name
+        identifier = currentUser.username ;
+      }
+    }
+console.log(this.resolveUsernameAndLoad)
+    // 3. Load data or show error
+    if (identifier) {
+      this.loadProfileData(identifier);
+    } else {
       this.errorMessage = "Please log in to view your profile.";
       this.isLoading = false;
-      return;
+      this.cdr.detectChanges();
     }
+  }
 
-    this.profileService.getProfile(email).subscribe({
+  /**
+   * Fetches profile data from the API
+   * @param identifier Username or Email
+   */
+  loadProfileData(identifier: string) {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.profileService.getProfile(identifier).subscribe({
       next: (res) => {
         this.isLoading = false;
-        if (res.isSuccess) {
+        if (res.isSuccess && res.data) {
           this.profile = res.data;
-          this.initForm(this.profile); // Populate form
-          this.cdr.detectChanges();
+          this.initForm(this.profile); // Populate form with fetched data
+          this.cdr.detectChanges(); // Force UI update
         } else {
-          this.errorMessage = "Failed to load profile.";
+          this.errorMessage = "Profile not found.";
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = "Network error.";
+        // Handle 404 specifically for better UX
+        if (err.status === 404) {
+          this.errorMessage = "User not found.";
+        } else {
+          this.errorMessage = "Network error loading profile.";
+        }
         console.error(err);
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // --- Initialize Form ---
+  /**
+   * Populates the Reactive Form with user data
+   */
   initForm(user: UserProfile) {
     this.profileForm.patchValue({
       firstName: user.firstName,
@@ -105,23 +139,28 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // --- Toggle Edit Mode ---
+  /**
+   * Toggles between View Mode and Edit Mode
+   */
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
+    // If cancelling edit, reset form to original state
     if (!this.isEditMode && this.profile) {
-      this.initForm(this.profile); // Reset form if cancelled
+      this.initForm(this.profile);
       this.imagePreview = null;
       this.selectedFile = null;
     }
   }
 
-  // --- Handle File Select ---
+  /**
+   * Handles file input change for Avatar upload
+   */
   onFileSelected(event: any) {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
       this.selectedFile = file;
-
-      // Create preview
+      
+      // Create a local preview of the image
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result as string;
@@ -131,7 +170,9 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // --- Save Changes ---
+  /**
+   * Submits the updated profile data
+   */
   saveChanges() {
     if (this.profileForm.invalid) return;
     this.isSaving = true;
@@ -143,20 +184,22 @@ export class ProfileComponent implements OnInit {
           if (res.isSuccess) {
             alert('Profile updated successfully!');
             this.isEditMode = false;
-            this.loadProfileData(); // Refresh data
+            this.resolveUsernameAndLoad(); // Reload to reflect changes
           } else {
             alert(res.error?.message || 'Update failed.');
           }
         },
         error: (err) => {
           this.isSaving = false;
-          alert('Network Error');
-          console.error(err);
+          alert('Network Error during update.');
+          // console.error(err);
         }
       });
   }
 
-  // --- Toggle 2FA ---
+  /**
+   * Toggles Two-Factor Authentication (2FA)
+   */
   toggle2FA() {
     if (!this.profile) return;
     
@@ -166,7 +209,8 @@ export class ProfileComponent implements OnInit {
     this.profileService.toggle2FA().subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.profile!.twoFactorEnabled = !this.profile!.twoFactorEnabled; // Optimistic update
+          // Optimistically update the UI
+          this.profile!.twoFactorEnabled = !this.profile!.twoFactorEnabled;
           alert(`2FA has been ${action}d successfully.`);
           this.cdr.detectChanges();
         } else {
@@ -174,12 +218,15 @@ export class ProfileComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error(err);
+        // console.error(err);
         alert('Error updating 2FA.');
       }
     });
   }
 
+  /**
+   * Helper to generate initials from name (e.g. "John Doe" -> "JD")
+   */
   getInitials(first: string, last: string): string {
     return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
   }

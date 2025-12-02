@@ -41,6 +41,7 @@ export class AuthService {
   private platformId = inject(PLATFORM_ID); 
   
   // --- Configuration ---
+  // Note: Backticks (`) are essential for string interpolation ${...}
   private apiUrl = `${environment.apiBaseUrl}/auth`;
   private oauthUrl = `${environment.apiBaseUrl}/oauth`; 
   
@@ -261,11 +262,21 @@ export class AuthService {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
+        
+        // Console log to inspect token structure (Remove in production)
+        console.log('🔑 Decoded Token:', decoded);
 
-        // Map ASP.NET Identity Claims to simple keys
+        // Extract Claims based on ASP.NET Identity Standards
         const user = {
+          // 1. Email
           email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-          role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+          
+          // 2. Role
+          role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+          
+          // 3. Username (This is what we need for the Profile API)
+          // Usually 'unique_name', 'name', or 'sub'
+          username: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.unique_name || decoded.sub || ''
         };
 
         this.currentUser$.next(user);

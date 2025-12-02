@@ -14,32 +14,26 @@ import { AuthService } from '../../Auth/Service/auth';
 })
 export class NavBarComponent implements OnInit, OnDestroy {
   
-  // حقن السيرفس public عشان ممكن نحتاجها في الـ HTML
   public authService = inject(AuthService);
   
   isMenuOpen = false;
   currentDate = new Date();
-  
-  // متغيرات الحالة
   isLoggedIn = false;
   isAdmin = false;
-
+  currentUsername: string | null = null; 
   private userSub!: Subscription;
 
-  ngOnInit() {
-    // الاشتراك في حالة المستخدم
-    // أي تغيير في السيرفس هيسمع هنا فوراً
+ngOnInit() {
     this.userSub = this.authService.currentUser$.subscribe(user => {
-      console.log('👤 Current User in Navbar:', user); // للتأكد إن الداتا وصلت
       
-      this.isLoggedIn = !!user; // لو فيه يوزر يبقى true
+      this.isLoggedIn = !!user;
       
       if (user) {
-        // التحقق من صلاحية الأدمن
         this.isAdmin = this.authService.hasRole('SuperAdmin');
-        console.log('Is Admin?', this.isAdmin);
+        this.currentUsername = user.username  ;
       } else {
         this.isAdmin = false;
+        this.currentUsername = null;
       }
     });
   }
@@ -50,11 +44,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
-    this.isMenuOpen = false; // اقفل القائمة لو مفتوحة
+    this.isMenuOpen = false; 
   }
 
   ngOnDestroy() {
-    // تنظيف الاشتراك عشان الميموري
     if (this.userSub) this.userSub.unsubscribe();
   }
 }

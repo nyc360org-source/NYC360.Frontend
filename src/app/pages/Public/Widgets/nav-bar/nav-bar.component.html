@@ -23,9 +23,11 @@
 
 <div class="d-flex align-items-center gap-2" *ngIf="isLoggedIn">
     
-    <a routerLink="/profile" class="profile-btn" title="My Profile">
-      <i class="bi bi-person-circle fs-4 text-white"></i>
-    </a>
+    <a [routerLink]="['/profile/', currentUsername]" 
+              class="profile-btn" 
+              title="My Profile">
+              <i class="bi bi-person-circle fs-4 text-white"></i>
+      </a>
 
     <button (click)="logout()" class="auth-link">Logout</button>
   </div>    </div>
