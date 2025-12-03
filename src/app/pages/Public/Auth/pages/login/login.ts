@@ -23,28 +23,33 @@ export class LoginComponent {
 
   isLoading = false;
   errorMessage: string | null = null;
-
-  onSubmit() {
-    // 1. Reset
+onSubmit() {
     this.isLoading = true;
     this.errorMessage = null;
 
-    // 2. Call Service
     this.authService.login(this.loginData).subscribe({
       next: (response) => {
         this.isLoading = false;
-
+        
         if (response.isSuccess) {
-          console.log('Login Success', response.data);
-          this.router.navigate(['']); 
+          // CASE A: 2FA is Required
+          if (response.data.twoFactorRequired) {
+            // Navigate to OTP Page (passing email as query param)
+            this.router.navigate(['/verify-otp'], { 
+              queryParams: { email: this.loginData.email } 
+            });
+          } 
+          // CASE B: Normal Login Success
+          else {
+            this.router.navigate(['/']); 
+          }
         } else {
-          this.errorMessage = response.error?.message || 'Login failed. Please check your credentials.';
+          this.errorMessage = response.error?.message || 'Login failed.';
         }
       },
       error: (err) => {
         this.isLoading = false;
-        console.error('Login Error:', err);
-        this.errorMessage = 'Network error. Please try again later.';
+        this.errorMessage = 'Network error.';
       }
     });
   }

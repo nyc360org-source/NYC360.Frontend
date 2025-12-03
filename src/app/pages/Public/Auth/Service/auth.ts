@@ -2,34 +2,17 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common'; // Essential for SSR safety
-import { jwtDecode } from 'jwt-decode'; // Import the real library
+import { isPlatformBrowser } from '@angular/common'; 
+import { jwtDecode } from 'jwt-decode'; 
 
-// Models and Environment
+// Models
 import { 
-  AuthResponse, 
-  ConfirmEmailRequest, 
-  ForgotPasswordRequest, 
-  GoogleLoginRequest, 
-  LoginRequest, 
-  LoginResponseData, 
-  RefreshTokenRequest, 
-  RegisterRequest, 
-  ResetPasswordRequest
+  AuthResponse, ConfirmEmailRequest, ForgotPasswordRequest, 
+  GoogleLoginRequest, LoginRequest, LoginResponseData, 
+  RefreshTokenRequest, RegisterRequest, ResetPasswordRequest
 } from '../models/auth';
 import { environment } from '../../../../environments/environment';
 
-/**
- * AuthService
- * ----------------------------------------------------------------------
- * Central service for handling Authentication.
- * Features:
- * - Login (Standard & Google)
- * - Registration & Password Management
- * - JWT Token Management (Access & Refresh Tokens)
- * - State Management (User Roles & Login Status)
- * ----------------------------------------------------------------------
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -40,164 +23,42 @@ export class AuthService {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID); 
   
-  // --- Configuration ---
-  // Note: Backticks (`) are essential for string interpolation ${...}
+  // --- Config ---
   private apiUrl = `${environment.apiBaseUrl}/auth`;
   private oauthUrl = `${environment.apiBaseUrl}/oauth`; 
   
-  // LocalStorage Keys
   private tokenKey = 'nyc360_token'; 
   private refreshTokenKey = 'nyc360_refresh_token'; 
 
-  // --- State Management ---
-  // Stores current user info (email, role) for the app to use
+  // --- State (Holds User Info + Permissions) ---
   public currentUser$ = new BehaviorSubject<any>(null);
 
   constructor() {
-    // Initialize state on app start
     this.loadUserFromToken();
   }
 
-
   // ============================================================
-  // SECTION 1: LOGIN & AUTHENTICATION API
-  // ============================================================
-
-  /**
-   * Google Backend Login
-   * Sends the Google ID Token to backend to exchange for our App Tokens.
-   */
-  loginWithGoogleBackend(idToken: string): Observable<AuthResponse<LoginResponseData>> {
-    const payload: GoogleLoginRequest = { idToken: idToken };
-    
-    return this.http.post<AuthResponse<LoginResponseData>>(`${this.oauthUrl}/google`, payload)
-      .pipe(
-        tap(res => {
-          if (res.isSuccess && res.data) {
-            // Save Access AND Refresh Tokens
-            this.saveTokens(res.data.accessToken, res.data.refreshToken || '');
-            this.loadUserFromToken();
-          }
-        })
-      );
-  }
-
-
-  /**
-   * Standard Login Request
-   * Posts email/password to backend.
-   */
-  login(data: LoginRequest): Observable<AuthResponse<LoginResponseData>> {
-    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/login`, data)
-      .pipe(
-        tap(res => {
-          if (res.isSuccess && res.data) {
-            // Save Access AND Refresh Tokens
-            this.saveTokens(res.data.accessToken, res.data.refreshToken);
-            this.loadUserFromToken();
-          }
-        })
-      );
-  }
-
-
-  /**
-   * Refresh Token API
-   * Called by Interceptor when Access Token expires (401).
-   */
-  refreshToken(data: RefreshTokenRequest): Observable<AuthResponse<LoginResponseData>> {
-    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/refresh-token`, data)
-      .pipe(
-        tap(res => {
-          if (res.isSuccess && res.data) {
-            // Update tokens in storage
-            this.saveTokens(res.data.accessToken, res.data.refreshToken);
-          }
-        })
-      );
-  }
-
-
-  /**
-   * Helper to get Google Redirect URL (for direct redirects)
-   */
-  getGoogleAuthUrl(): string {
-    return `${this.apiUrl}/google-login`; 
-  }
-
-
-  // ============================================================
-  // SECTION 2: ACCOUNT MANAGEMENT API
+  // 1. PERMISSION & ROLE CHECKS (CORE LOGIC)
   // ============================================================
 
   /**
-   * Register Request
-   * Creates a new user account.
+   * Checks if the current user has a specific permission.
+   * @param permission The permission string (e.g. 'Permissions.Users.View')
    */
-  register(data: RegisterRequest): Observable<AuthResponse<any>> {
-    return this.http.post<AuthResponse<any>>(`${this.apiUrl}/register`, data);
+  hasPermission(permission: string): boolean {
+    const user = this.currentUser$.value;
+    if (!user) return false;
+
+    // 1. SuperAdmin bypass (Access to everything)
+    if (this.hasRole('SuperAdmin')) return true;
+
+    // 2. Check if permission exists in the user's list
+    const userPermissions: string[] = user.permissions || [];
+    return userPermissions.includes(permission);
   }
 
-
   /**
-   * Confirm Email
-   * Verifies user email via token sent to email.
-   */
-  confirmEmail(data: ConfirmEmailRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/confirm-email`, {
-      email: data.email, 
-      token: data.token
-    });
-  }
-
-
-  /**
-   * Forgot Password
-   * Initiates the password recovery process.
-   */
-  forgotPassword(data: ForgotPasswordRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/forgot-password`, data);
-  }
-
-
-  /**
-   * Reset Password
-   * Sets a new password using the recovery token.
-   */
-  resetPassword(data: ResetPasswordRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/password-reset`, data);
-  }
-
-
-  // ============================================================
-  // SECTION 3: STATE & ROLE MANAGEMENT
-  // ============================================================
-
-  /**
-   * Logout
-   * Clears tokens and redirects to login.
-   */
-  logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.tokenKey);
-      localStorage.removeItem(this.refreshTokenKey);
-    }
-    this.currentUser$.next(null);
-    this.router.navigate(['/Login']); 
-  }
-
-
-  /**
-   * Check if User is Logged In
-   */
-  isLoggedIn(): boolean {
-    return !!this.currentUser$.value;
-  }
-
-
-  /**
-   * Check Role
-   * Verifies if the current user has a specific role (e.g. 'SuperAdmin').
+   * Checks if the user belongs to a specific Role.
    */
   hasRole(targetRole: string): boolean {
     const user = this.currentUser$.value;
@@ -209,50 +70,102 @@ export class AuthService {
     return user.role === targetRole;
   }
 
-
-  // ============================================================
-  // SECTION 4: TOKEN HELPERS (Storage & Decoding)
-  // ============================================================
-
   /**
-   * Save Tokens
-   * Stores both Access and Refresh tokens in LocalStorage.
+   * Checks if user is authenticated.
    */
+  isLoggedIn(): boolean {
+    return !!this.currentUser$.value;
+  }
+
+  // ============================================================
+  // 2. API CALLS (LOGIN & AUTH)
+  // ============================================================
+
+  login(data: LoginRequest): Observable<AuthResponse<LoginResponseData>> {
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/login`, data)
+      .pipe(tap(res => this.handleLoginSuccess(res)));
+  }
+
+  loginWithGoogleBackend(idToken: string): Observable<AuthResponse<LoginResponseData>> {
+    const payload: GoogleLoginRequest = { idToken: idToken };
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.oauthUrl}/google`, payload)
+      .pipe(tap(res => this.handleLoginSuccess(res)));
+  }
+
+  login2FA(email: string, code: string): Observable<AuthResponse<LoginResponseData>> {
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/2fa-verify`, { email, code })
+      .pipe(tap(res => this.handleLoginSuccess(res)));
+  }
+
+  refreshToken(data: RefreshTokenRequest): Observable<AuthResponse<LoginResponseData>> {
+    return this.http.post<AuthResponse<LoginResponseData>>(`${this.apiUrl}/refresh-token`, data)
+      .pipe(tap(res => this.handleLoginSuccess(res)));
+  }
+
+  // --- Account Management ---
+  register(data: RegisterRequest): Observable<AuthResponse<any>> {
+    return this.http.post<AuthResponse<any>>(`${this.apiUrl}/register`, data);
+  }
+
+  confirmEmail(data: ConfirmEmailRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/confirm-email`, data);
+  }
+
+  forgotPassword(data: ForgotPasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/forgot-password`, data);
+  }
+
+  resetPassword(data: ResetPasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/password-reset`, data);
+  }
+
+  getGoogleAuthUrl(): string {
+    return `${this.apiUrl}/google-login`; 
+  }
+
+  // ============================================================
+  // 3. STATE MANAGEMENT & HELPERS
+  // ============================================================
+
+  logout() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.refreshTokenKey);
+    }
+    this.currentUser$.next(null);
+    this.router.navigate(['/Login']); 
+  }
+
+  private handleLoginSuccess(res: AuthResponse<LoginResponseData>) {
+    if (res.isSuccess && res.data && res.data.accessToken) {
+      this.saveTokens(res.data.accessToken, res.data.refreshToken);
+      this.loadUserFromToken();
+    }
+  }
+
   private saveTokens(accessToken: string, refreshToken: string) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.tokenKey, accessToken);
-      if (refreshToken) {
-        localStorage.setItem(this.refreshTokenKey, refreshToken);
-      }
+      if (refreshToken) localStorage.setItem(this.refreshTokenKey, refreshToken);
     }
   }
 
-
-  /**
-   * Get Access Token (Public for Interceptor)
-   */
   getToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(this.tokenKey);
-    }
+    if (isPlatformBrowser(this.platformId)) return localStorage.getItem(this.tokenKey);
     return null;
   }
 
-
-  /**
-   * Get Refresh Token (Public for Interceptor)
-   */
   getRefreshToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(this.refreshTokenKey);
-    }
+    if (isPlatformBrowser(this.platformId)) return localStorage.getItem(this.refreshTokenKey);
     return null;
   }
 
-
   /**
-   * Load User From Token
-   * Decodes JWT and updates the behavior subject.
+   * Decodes the JWT Token and extracts:
+   * - Email
+   * - Username
+   * - Role
+   * - Permissions (Crucial for Dynamic Access)
    */
   private loadUserFromToken() {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -262,21 +175,16 @@ export class AuthService {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
-        
-        // Console log to inspect token structure (Remove in production)
-        console.log('🔑 Decoded Token:', decoded);
+        console.log('🔑 Decoded Token:', decoded); // Debugging
 
-        // Extract Claims based on ASP.NET Identity Standards
         const user = {
-          // 1. Email
           email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-          
-          // 2. Role
           role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+          username: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.unique_name || decoded.sub || '',
           
-          // 3. Username (This is what we need for the Profile API)
-          // Usually 'unique_name', 'name', or 'sub'
-          username: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.unique_name || decoded.sub || ''
+          // Extract Permissions array from Token
+          // Ensure backend sends 'permissions' or 'Permissions' claim
+          permissions: decoded.permissions || decoded.Permissions || []
         };
 
         this.currentUser$.next(user);

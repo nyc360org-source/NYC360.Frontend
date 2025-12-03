@@ -19,32 +19,39 @@ export class NavBarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
   currentDate = new Date();
   isLoggedIn = false;
-  isAdmin = false;
-  currentUsername: string | null = null; 
+  currentUsername: string | null = null;
+
+  // Permissions Flags for HTML
+
+  canViewDashboard = false;
+  
   private userSub!: Subscription;
 
-ngOnInit() {
+  ngOnInit() {
     this.userSub = this.authService.currentUser$.subscribe(user => {
-      
       this.isLoggedIn = !!user;
       
       if (user) {
-        this.isAdmin = this.authService.hasRole('SuperAdmin');
-        this.currentUsername = user.username  ;
+        this.currentUsername = user.username || user.unique_name || user.email;
+
+        // Check Permissions Dynamically
+        this.canViewDashboard = this.authService.hasPermission('Permissions.Dashboard.View')
       } else {
-        this.isAdmin = false;
-        this.currentUsername = null;
+        this.resetPermissions();
       }
     });
   }
 
-  toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
+  resetPermissions() {
+
+    this.currentUsername = null;
   }
 
+  toggleMenu() { this.isMenuOpen = !this.isMenuOpen; }
+  
   logout() {
     this.authService.logout();
-    this.isMenuOpen = false; 
+    this.isMenuOpen = false;
   }
 
   ngOnDestroy() {

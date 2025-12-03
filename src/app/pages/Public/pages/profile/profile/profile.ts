@@ -203,27 +203,29 @@ console.log(this.resolveUsernameAndLoad)
   toggle2FA() {
     if (!this.profile) return;
     
-    const action = this.profile.twoFactorEnabled ? 'Disable' : 'Enable';
+    // Determine the NEW state (if enabled, we want to disable, and vice versa)
+    const newState = !this.profile.twoFactorEnabled;
+    const action = newState ? 'Enable' : 'Disable';
+
     if (!confirm(`Are you sure you want to ${action} Two-Factor Authentication?`)) return;
 
-    this.profileService.toggle2FA().subscribe({
+    // Send the boolean value
+    this.profileService.toggle2FA(newState).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          // Optimistically update the UI
-          this.profile!.twoFactorEnabled = !this.profile!.twoFactorEnabled;
+          this.profile!.twoFactorEnabled = newState; // Update UI
           alert(`2FA has been ${action}d successfully.`);
           this.cdr.detectChanges();
         } else {
-          alert('Failed to update 2FA settings.');
+          alert(res.error?.message || 'Failed to update 2FA settings.');
         }
       },
       error: (err) => {
-        // console.error(err);
+        console.error(err);
         alert('Error updating 2FA.');
       }
     });
   }
-
   /**
    * Helper to generate initials from name (e.g. "John Doe" -> "JD")
    */

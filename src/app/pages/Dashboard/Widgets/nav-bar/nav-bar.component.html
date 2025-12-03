@@ -34,9 +34,17 @@
     <ul class="sub-links">
       <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">HOME</a></li>
       <li><a routerLink="/admin/dashboard" routerLinkActive="active">Dashboard</a></li>
-      <li><a routerLink="/admin/User" routerLinkActive="active">users</a></li>
-      <li><a routerLink="/admin/Role" routerLinkActive="active">Roles</a></li>
-      <li><a routerLink="/admin/rss" routerLinkActive="active">Rss Links</a></li>
+      <li *ngIf=" canViewDashboard  && canViewRoles  ">
+        <a routerLink="/admin/Role" routerLinkActive="active">Roles</a>
+      </li>
+
+      <li *ngIf="canViewDashboard  && canViewUsers">
+        <a routerLink="/admin/User" routerLinkActive="active">Users</a>
+      </li>
+
+      <li *ngIf="canViewDashboard  && canViewRSS">
+        <a routerLink="/admin/rss" routerLinkActive="active">RSS Feeds</a>
+      </li>
  
     </ul>
   </div>

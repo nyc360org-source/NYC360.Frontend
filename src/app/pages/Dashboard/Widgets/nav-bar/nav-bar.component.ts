@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common'; // مهم للتاريخ والـ Classes
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../../Public/Auth/Service/auth';
 
 @Component({
   selector: 'app-nav-bar',
@@ -8,11 +9,36 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
-  providers: [DatePipe] // عشان نستخدم التاريخ في الـ HTML
+  providers: [DatePipe] 
 })
 export class NavBarComponent {
+
+  public authService = inject(AuthService);
+
+
+
   isMenuOpen: boolean = false;
   currentDate: Date = new Date();
+  canViewUsers = false;
+  canViewRoles = false;
+  canViewRSS = false;
+  canViewDashboard = false;
+
+  ngOnInit() {
+
+      
+
+        // Check Permissions Dynamically
+        this.canViewUsers = this.authService.hasPermission('Permissions.Users.View');
+        this.canViewRoles = this.authService.hasPermission('Permissions.Roles.View');
+        this.canViewRSS = this.authService.hasPermission('Permissions.Posts.View'); // Or RSS permission
+        this.canViewDashboard = this.authService.hasPermission('Permissions.Dashboard.View')
+
+  }
+
+
+
+
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;

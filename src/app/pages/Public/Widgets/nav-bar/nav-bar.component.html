@@ -1,6 +1,7 @@
 <nav class="nav-bar-container">
   
   <div class="top-header">
+    
     <button class="mobile-toggle" (click)="toggleMenu()">
       <i class="bi" [ngClass]="isMenuOpen ? 'bi-x-lg' : 'bi-list'"></i>
     </button>
@@ -15,29 +16,40 @@
     </ul>
 
     <div class="actions">
+      <button class="search-button"><i class="bi bi-search"></i></button>
       
       <ng-container *ngIf="!isLoggedIn">
-        <a routerLink="/Login" class="subscribe ">Login</a>
+        <a routerLink="/Login" class="subscribe">Login</a>
         <a routerLink="/Signup" class="subscribe-button">Sign Up</a>
       </ng-container>
 
-<div class="d-flex align-items-center gap-2" *ngIf="isLoggedIn">
-    
-    <a [routerLink]="['/profile/', currentUsername]" 
-              class="profile-btn" 
-              title="My Profile">
-              <i class="bi bi-person-circle fs-4 text-white"></i>
-      </a>
+      <div class="d-flex align-items-center gap-2" *ngIf="isLoggedIn">
+        
+        <a [routerLink]="['/profile', currentUsername]" 
+           class="profile-btn" 
+           title="My Profile">
+          <i class="bi bi-person-circle fs-4 text-white"></i>
+        </a>
 
-    <button (click)="logout()" class="auth-link">Logout</button>
-  </div>    </div>
+        <button (click)="logout()" class="auth-link">Logout</button>
+      </div>
+    </div>
   </div>
 
   <div class="mobile-menu" [class.open]="isMenuOpen">
     <ul class="mobile-links">
       <li><a routerLink="/" (click)="toggleMenu()">HOME</a></li>
-      <li *ngIf="isAdmin"><a routerLink="/admin/dashboard" (click)="toggleMenu()">DASHBOARD</a></li>
-      <li *ngIf="!isLoggedIn"><a routerLink="/login" (click)="toggleMenu()">LOGIN</a></li>
+      
+      <li *ngIf="isLoggedIn">
+        <a [routerLink]="['/profile', currentUsername]" (click)="toggleMenu()">MY PROFILE</a>
+      </li>
+
+      <li *ngIf="canViewDashboard">
+        <a routerLink="/admin/dashboard" (click)="toggleMenu()">DASHBOARD</a>
+      </li>
+
+
+      <li *ngIf="!isLoggedIn"><a routerLink="/Login" (click)="toggleMenu()">LOGIN</a></li>
       <li *ngIf="isLoggedIn"><a (click)="logout()">LOGOUT</a></li>
     </ul>
   </div>
@@ -50,13 +62,15 @@
     <ul class="sub-links">
       <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">HOME</a></li>
       
-      <li *ngIf="isAdmin">
+      <li *ngIf="canViewDashboard">
         <a routerLink="/admin/dashboard" routerLinkActive="active" class="highlight-link">
           <i class="bi bi-speedometer2"></i> Dashboard
         </a>
       </li>
 
 
+
     </ul>
   </div>
+
 </nav>
