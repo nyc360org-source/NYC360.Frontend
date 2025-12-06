@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { Role, RolesResponse, UpdateRolePermissionsRequest } from '../models/role';
+import { StandardResponse } from '../../../../models/standardresponse';
 
 @Injectable({
   providedIn: 'root'
@@ -45,14 +46,11 @@ export class RolesService {
     return this.http.delete(`${this.baseUrl}/delete/${roleId}`);
   }
 
+
   // --- Get System Permissions (Mock) ---
-  getAllPermissions(): Observable<string[]> {
-    const mockPermissions = [
-      "Permissions.Roles.View", "Permissions.Roles.Create", "Permissions.Roles.Edit", "Permissions.Roles.Delete",
-      "Permissions.Users.View", "Permissions.Users.Edit", "Permissions.Users.Delete", 
-      "Permissions.Users.UpdateRoles", "Permissions.Users.UpdatePermissions",
-      "Permissions.Posts.View", "Permissions.Posts.Create", "Permissions.Posts.Edit", "Permissions.Posts.Delete"
-    ];
-    return of(mockPermissions);
+  getAllPermissions(): Observable<StandardResponse<string[]>> {
+    return this.http.get<StandardResponse<string[]>>(`${this.baseUrl}/all-permissions`);
   }
+
+  
 }

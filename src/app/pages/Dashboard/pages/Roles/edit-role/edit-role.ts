@@ -60,7 +60,7 @@ export class EditRoleComponent implements OnInit {
           return;
         }
 
-        this.allPermissions = allPermissions || [];
+        this.allPermissions = allPermissions.data || [];
         const role = roleData.data; 
         
         // Store the Role Name to send it back during update

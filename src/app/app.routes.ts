@@ -110,7 +110,11 @@ export const routes: Routes = [
         // We rely on history.state for data here
         path: 'rss/edit', 
         loadComponent: () => import('./pages/Dashboard/pages/RssLinks/pages/rss-form/rss-form').then(m => m.RssFormComponent)
-      }
+      },
+      { path: 'posts', loadComponent: () => import('./pages/Dashboard/pages/posts/post-list/post-list').then(m => m.PostListComponent) },
+      { path: 'posts/create', loadComponent: () => import('./pages/Dashboard/pages/posts/post-form/post-form').then(m => m.PostFormComponent) },
+      { path: 'posts/edit/:id', loadComponent: () => import('./pages/Dashboard/pages/posts/post-form/post-form').then(m => m.PostFormComponent) },
+      { path: 'posts/details/:id', loadComponent: () => import('./pages/Dashboard/pages/posts/post-details/post-details').then(m => m.PostDetailsComponent) },
     ]
   },
 

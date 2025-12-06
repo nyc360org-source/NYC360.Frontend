@@ -56,3 +56,7 @@ export interface LoginResponseData {
   refreshToken: string; // Ensure this exists
   twoFactorRequired: boolean;
 }
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

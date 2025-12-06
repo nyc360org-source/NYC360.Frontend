@@ -1,25 +1,25 @@
-// src/app/core/models/role.models.ts
+// src/app/pages/Dashboard/pages/Roles/models/role.ts
+
+// Assuming StandardResponse is defined elsewhere (as previously discussed)
+// import { StandardResponse } from 'your-path-to-api-response.model'; 
 
 export interface Role {
   id: number;
   name: string;
   permissions: string[];
+  // **FIXED ERROR:** Added the missing property
+  contentLimit: number; 
 }
 
-/**
- * FIXED: Payload must include 'id' and 'name' to satisfy backend validation.
- */
+// Used for fetching a list of roles
+export interface RolesResponse<T> {
+    isSuccess: boolean;
+    data?: T; // T will be Role[] in roles-list component
+    error?: { code: string; message: string; };
+}
+
 export interface UpdateRolePermissionsRequest {
-  id: number;    // <--- Added
-  name: string;  // <--- Added (Crucial to fix the error)
-  permissions: string[];
-}
-
-export interface RolesResponse<T = any> {
-  isSuccess: boolean;
-  data: T; 
-  error: {
-    code: string;
-    message: string;
-  } | null;
+  id: number;
+    name: string;
+    permissions: string[];
 }

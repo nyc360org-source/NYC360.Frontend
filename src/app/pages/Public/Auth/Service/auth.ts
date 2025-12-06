@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 
 // Models
 import { 
-  AuthResponse, ConfirmEmailRequest, ForgotPasswordRequest, 
+  AuthResponse, ChangePasswordRequest, ConfirmEmailRequest, ForgotPasswordRequest, 
   GoogleLoginRequest, LoginRequest, LoginResponseData, 
   RefreshTokenRequest, RegisterRequest, ResetPasswordRequest
 } from '../models/auth';
@@ -160,6 +160,10 @@ export class AuthService {
     return null;
   }
 
+  
+changePassword(data: ChangePasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/change-password`, data);
+  }
   /**
    * Decodes the JWT Token and extracts:
    * - Email
@@ -175,7 +179,6 @@ export class AuthService {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
-        console.log('🔑 Decoded Token:', decoded); // Debugging
 
         const user = {
           email: decoded.email || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],

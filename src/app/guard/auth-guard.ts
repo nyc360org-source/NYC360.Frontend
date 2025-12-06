@@ -3,21 +3,25 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../pages/Public/Auth/Service/auth';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
   const router = inject(Router);
+  const authService = inject(AuthService);
 
-  // 1. Check Login
-  if (!authService.isLoggedIn()) {
+  // ---------------------------------------------------------
+  // 1. Check Login using Token in localStorage (FIXED)
+  // ---------------------------------------------------------
+  const token = localStorage.getItem('nyc360_token');
+
+  if (!token) {
     router.navigate(['/Login']);
     return false;
   }
 
-  // 2. Check Permissions (Dynamic)
-  // Reads the 'permission' data property from app.routes.ts
+  // ---------------------------------------------------------
+  // 2. Check Permissions (If route requires specific permission)
+  // ---------------------------------------------------------
   const requiredPermission = route.data['permission'] as string;
 
   if (requiredPermission) {
-    // If user does NOT have permission, block access
     if (!authService.hasPermission(requiredPermission)) {
       alert('Access Denied: You do not have the required permission.');
       return false;

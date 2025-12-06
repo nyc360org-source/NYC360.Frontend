@@ -10,36 +10,39 @@ import { UserProfile } from '../models/profile';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss']
 })
 export class ProfileComponent implements OnInit {
   
-  // Expose environment to the template (HTML)
   protected readonly environment = environment;
   
-  // --- Dependency Injection ---
+  // --- Dependencies ---
   private profileService = inject(ProfileService);
-  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
-  // --- State Variables ---
+  // --- State ---
   profile: UserProfile | null = null;
   isLoading = true;
   isSaving = false;
-  isEditMode = false; // Controls Read-Only vs Edit state
+  isEditMode = false;
   errorMessage = '';
   
-  // --- Form & File Handling ---
+  // Modal State
+  showPasswordModal = false;
+
+  // --- Forms ---
   profileForm: FormGroup;
+  passwordForm: FormGroup; // New Form for Password Change
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
   constructor() {
-    // Initialize the form with validators
+    // Profile Form
     this.profileForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
@@ -52,32 +55,29 @@ export class ProfileComponent implements OnInit {
       linkedInUrl: [''],
       githubUrl: ['']
     });
+
+    // Password Form (New)
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    });
   }
 
   ngOnInit() {
     this.resolveUsernameAndLoad();
   }
 
-  /**
-   * Determines which user profile to load.
-   * 1. Checks the URL for a username parameter.
-   * 2. If empty, falls back to the currently logged-in user's details.
-   */
+  // --- Load Data ---
   resolveUsernameAndLoad() {
-    // 1. Try to get 'username' from the Route (e.g., /profile/john_doe)
     let identifier = this.route.snapshot.paramMap.get('username');
-
-    // 2. If no route param, get it from the Authenticated User
     if (!identifier) {
       const currentUser = this.authService.currentUser$.value;
       if (currentUser) {
-        // 🛠️ FIX: Fallback Logic to ensure we get a valid ID
-        // Prioritize username, then email, then unique_name
-        identifier = currentUser.username ;
+        identifier = currentUser.username || currentUser.email || currentUser.unique_name;
       }
     }
-console.log(this.resolveUsernameAndLoad)
-    // 3. Load data or show error
+
     if (identifier) {
       this.loadProfileData(identifier);
     } else {
@@ -87,21 +87,15 @@ console.log(this.resolveUsernameAndLoad)
     }
   }
 
-  /**
-   * Fetches profile data from the API
-   * @param identifier Username or Email
-   */
   loadProfileData(identifier: string) {
     this.isLoading = true;
-    this.errorMessage = '';
-    
     this.profileService.getProfile(identifier).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.isSuccess && res.data) {
           this.profile = res.data;
-          this.initForm(this.profile); // Populate form with fetched data
-          this.cdr.detectChanges(); // Force UI update
+          this.initForm(this.profile);
+          this.cdr.detectChanges();
         } else {
           this.errorMessage = "Profile not found.";
           this.cdr.detectChanges();
@@ -109,21 +103,12 @@ console.log(this.resolveUsernameAndLoad)
       },
       error: (err) => {
         this.isLoading = false;
-        // Handle 404 specifically for better UX
-        if (err.status === 404) {
-          this.errorMessage = "User not found.";
-        } else {
-          this.errorMessage = "Network error loading profile.";
-        }
-        console.error(err);
+        this.errorMessage = err.status === 404 ? "User not found." : "Network error.";
         this.cdr.detectChanges();
       }
     });
   }
 
-  /**
-   * Populates the Reactive Form with user data
-   */
   initForm(user: UserProfile) {
     this.profileForm.patchValue({
       firstName: user.firstName,
@@ -139,12 +124,9 @@ console.log(this.resolveUsernameAndLoad)
     });
   }
 
-  /**
-   * Toggles between View Mode and Edit Mode
-   */
+  // --- Profile Actions ---
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
-    // If cancelling edit, reset form to original state
     if (!this.isEditMode && this.profile) {
       this.initForm(this.profile);
       this.imagePreview = null;
@@ -152,15 +134,10 @@ console.log(this.resolveUsernameAndLoad)
     }
   }
 
-  /**
-   * Handles file input change for Avatar upload
-   */
   onFileSelected(event: any) {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
       this.selectedFile = file;
-      
-      // Create a local preview of the image
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result as string;
@@ -170,13 +147,9 @@ console.log(this.resolveUsernameAndLoad)
     }
   }
 
-  /**
-   * Submits the updated profile data
-   */
   saveChanges() {
     if (this.profileForm.invalid) return;
     this.isSaving = true;
-
     this.profileService.updateMyProfile(this.profileForm.value, this.selectedFile || undefined)
       .subscribe({
         next: (res) => {
@@ -184,51 +157,72 @@ console.log(this.resolveUsernameAndLoad)
           if (res.isSuccess) {
             alert('Profile updated successfully!');
             this.isEditMode = false;
-            this.resolveUsernameAndLoad(); // Reload to reflect changes
+            this.resolveUsernameAndLoad();
           } else {
             alert(res.error?.message || 'Update failed.');
           }
         },
-        error: (err) => {
-          this.isSaving = false;
-          alert('Network Error during update.');
-          // console.error(err);
-        }
+        error: () => { this.isSaving = false; alert('Network Error'); }
       });
   }
 
-  /**
-   * Toggles Two-Factor Authentication (2FA)
-   */
+  // --- 2FA Action ---
   toggle2FA() {
     if (!this.profile) return;
-    
-    // Determine the NEW state (if enabled, we want to disable, and vice versa)
-    const newState = !this.profile.twoFactorEnabled;
-    const action = newState ? 'Enable' : 'Disable';
-
+    const action = this.profile.twoFactorEnabled ? 'Disable' : 'Enable';
     if (!confirm(`Are you sure you want to ${action} Two-Factor Authentication?`)) return;
 
-    // Send the boolean value
-    this.profileService.toggle2FA(newState).subscribe({
+    this.profileService.toggle2FA(!this.profile.twoFactorEnabled).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.profile!.twoFactorEnabled = newState; // Update UI
-          alert(`2FA has been ${action}d successfully.`);
+          this.profile!.twoFactorEnabled = !this.profile!.twoFactorEnabled;
+          alert(`2FA has been ${action}d.`);
           this.cdr.detectChanges();
         } else {
-          alert(res.error?.message || 'Failed to update 2FA settings.');
+          alert('Failed to update 2FA settings.');
         }
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Error updating 2FA.');
       }
     });
   }
-  /**
-   * Helper to generate initials from name (e.g. "John Doe" -> "JD")
-   */
+
+  // --- Password Modal Actions ---
+  openPasswordModal() {
+    this.passwordForm.reset();
+    this.showPasswordModal = true;
+  }
+
+  closePasswordModal() {
+    this.showPasswordModal = false;
+  }
+
+  onChangePassword() {
+    if (this.passwordForm.invalid) return;
+
+    const { currentPassword, newPassword, confirmPassword } = this.passwordForm.value;
+
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match!');
+      return;
+    }
+
+    this.isSaving = true;
+    this.authService.changePassword({ currentPassword, newPassword }).subscribe({
+      next: (res) => {
+        this.isSaving = false;
+        if (res.isSuccess) {
+          alert('Password changed successfully!');
+          this.closePasswordModal();
+        } else {
+          alert(res.error?.message || 'Failed to change password.');
+        }
+      },
+      error: () => {
+        this.isSaving = false;
+        alert('Network Error.');
+      }
+    });
+  }
+
   getInitials(first: string, last: string): string {
     return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
   }

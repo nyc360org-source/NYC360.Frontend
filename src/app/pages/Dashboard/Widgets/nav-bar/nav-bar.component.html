@@ -45,7 +45,13 @@
       <li *ngIf="canViewDashboard  && canViewRSS">
         <a routerLink="/admin/rss" routerLinkActive="active">RSS Feeds</a>
       </li>
- 
+
+
+       <li *ngIf="canViewDashboard  && canViewRSS">
+        <a routerLink="/admin/posts" routerLinkActive="active">posts</a>
+      </li>
+
+
     </ul>
   </div>
 </nav>

@@ -49,23 +49,23 @@
     <div class="profile-content">
       <div class="content-header">
         <h3>Personal Information</h3>
-        <button class="btn-edit" (click)="toggleEditMode()" *ngIf="!isEditMode">
-          <i class="bi bi-pencil-square"></i> Edit Profile
-        </button>
+        <div class="header-actions">
+          <button class="btn-outline" (click)="openPasswordModal()">
+            <i class="bi bi-key"></i> Change Password
+          </button>
+          
+          <button class="btn-edit" (click)="toggleEditMode()" *ngIf="!isEditMode">
+            <i class="bi bi-pencil-square"></i> Edit Profile
+          </button>
+        </div>
       </div>
 
       <form [formGroup]="profileForm" (ngSubmit)="saveChanges()">
         
         <div class="form-section">
           <label>Bio</label>
-          <br>
-            <textarea 
-                [readonly]="!isEditMode" 
-                formControlName="bio" 
-                placeholder="Tell us about yourself..."
-                class="bio-input">
-            </textarea>   
-             </div>
+          <textarea [readonly]="!isEditMode" formControlName="bio" placeholder="Tell us about yourself..." class="bio-input"></textarea>
+        </div>
 
         <div class="form-row">
           <div class="form-group">
@@ -85,13 +85,13 @@
           </div>
           <div class="form-group">
             <label>Phone Number</label>
-            <input [readonly]="!isEditMode" formControlName="phoneNumber" type="tel" placeholder="+1 234 567 890">
+            <input [readonly]="!isEditMode" formControlName="phoneNumber" type="tel">
           </div>
         </div>
 
         <div class="form-group">
           <label>Website</label>
-          <input [readonly]="!isEditMode" formControlName="websiteUrl" type="url" placeholder="https://yourwebsite.com">
+          <input [readonly]="!isEditMode" formControlName="websiteUrl" type="url">
         </div>
 
         <h4 class="mt-4 mb-3">Social Media</h4>
@@ -105,17 +105,6 @@
             <input [readonly]="!isEditMode" formControlName="twitterUrl" type="text">
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label><i class="bi bi-instagram text-danger"></i> Instagram</label>
-            <input [readonly]="!isEditMode" formControlName="instagramUrl" type="text">
-          </div>
-          <div class="form-group">
-            <label><i class="bi bi-linkedin text-info"></i> LinkedIn</label>
-            <input [readonly]="!isEditMode" formControlName="linkedInUrl" type="text">
-          </div>
-        </div>
-
         <div class="form-actions" *ngIf="isEditMode">
           <button type="button" class="btn-cancel" (click)="toggleEditMode()">Cancel</button>
           <button type="submit" class="btn-save" [disabled]="isSaving">
@@ -127,4 +116,38 @@
     </div>
 
   </div>
+
+  <div class="modal-backdrop" *ngIf="showPasswordModal">
+    <div class="modal-content fade-in">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button class="close-btn" (click)="closePasswordModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      
+      <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input formControlName="currentPassword" type="password" placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input formControlName="newPassword" type="password" placeholder="Minimum 6 characters">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input formControlName="confirmPassword" type="password" placeholder="Re-enter new password">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closePasswordModal()">Cancel</button>
+          <button type="submit" class="btn-save" [disabled]="isSaving || passwordForm.invalid">
+            {{ isSaving ? 'Updating...' : 'Update Password' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>

@@ -8,7 +8,7 @@ $border: #e9ecef;
 $danger: #dc3545;
 
 .page-container {
-  padding: 30px;
+  padding: 15px; /* تم التصغير */
   min-height: 100vh;
   background-color: $bg-page;
   font-family: 'Segoe UI', sans-serif;
@@ -20,11 +20,11 @@ $danger: #dc3545;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 15px; /* تم التصغير */
 
   .title-section {
-    h2 { font-weight: 800; color: $text-main; margin-bottom: 5px; }
-    p { color: $text-muted; font-size: 0.95rem; }
+    h2 { font-weight: 800; color: $text-main; margin-bottom: 2px; } /* تم التصغير */
+    p { color: $text-muted; font-size: 0.85rem; } /* تم التصغير */
   }
 
   .btn-back {
@@ -33,7 +33,7 @@ $danger: #dc3545;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px; /* تم التصغير */
     transition: 0.2s;
     &:hover { color: $gold; }
   }
@@ -42,24 +42,24 @@ $danger: #dc3545;
 // --- Card Container ---
 .form-card {
   background: $card-bg;
-  padding: 40px;
-  border-radius: 12px;
+  padding: 25px; /* تم التصغير */
+  border-radius: 8px; /* تم التصغير */
   border: 1px solid $border;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
   max-width: 900px;
   margin: 0 auto;
 }
 
 // --- Inputs Styling ---
 .form-section {
-  margin-bottom: 25px;
+  margin-bottom: 15px; /* تم التصغير */
   
   .section-label {
     display: block;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 6px; /* تم التصغير */
     color: $text-main;
-    font-size: 1rem;
+    font-size: 0.9rem; /* تم التصغير */
   }
 
   .input-group {
@@ -67,48 +67,49 @@ $danger: #dc3545;
     
     .input-icon {
       position: absolute;
-      left: 15px;
+      left: 10px; /* تم التصغير */
       top: 50%;
       transform: translateY(-50%);
       color: $text-muted;
+      font-size: 0.85rem;
     }
 
     input {
       width: 100%;
-      padding: 12px 15px 12px 45px; // space for icon
+      padding: 8px 12px 8px 35px; /* تم التصغير */
       border: 1px solid $border;
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 5px; /* تم التصغير */
+      font-size: 0.9rem;
       background: #fdfdfd;
       transition: all 0.3s;
 
       &:focus {
         outline: none;
         border-color: $gold;
-        box-shadow: 0 0 0 3px rgba($gold, 0.1);
+        box-shadow: 0 0 0 2px rgba($gold, 0.15);
         background: #fff;
       }
     }
   }
 }
 
-.divider { border: 0; border-top: 1px solid $border; margin: 30px 0; }
+.divider { border: 0; border-top: 1px solid $border; margin: 15px 0; } /* تم التصغير */
 
 // --- Permissions Grid ---
 .permissions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* تم التصغير */
+  gap: 8px; /* تم التصغير */
 }
 
 .permission-item {
   .checkbox-label {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 8px; /* تم التصغير */
     background: #fff;
     border: 1px solid $border;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
@@ -116,7 +117,6 @@ $danger: #dc3545;
     &:hover {
       border-color: $gold;
       background: rgba($gold, 0.03);
-      transform: translateY(-2px);
     }
 
     // Hide default checkbox
@@ -124,11 +124,12 @@ $danger: #dc3545;
 
     // Custom Checkmark
     .custom-checkmark {
-      height: 20px;
-      width: 20px;
+      flex-shrink: 0;
+      height: 16px; /* تم التصغير */
+      width: 16px; /* تم التصغير */
       background-color: #eee;
-      border-radius: 4px;
-      margin-right: 12px;
+      border-radius: 3px; /* تم التصغير */
+      margin-right: 8px; /* تم التصغير */
       position: relative;
       transition: 0.2s;
 
@@ -136,8 +137,8 @@ $danger: #dc3545;
         content: "";
         position: absolute;
         display: none;
-        left: 7px; top: 3px;
-        width: 6px; height: 11px;
+        left: 5px; top: 2px;
+        width: 4px; height: 8px; /* تم التصغير */
         border: solid white;
         border-width: 0 2px 2px 0;
         transform: rotate(45deg);
@@ -153,8 +154,9 @@ $danger: #dc3545;
     .perm-text {
       display: flex;
       flex-direction: column;
-      .perm-module { font-size: 0.7rem; color: $text-muted; text-transform: uppercase; font-weight: 600; }
-      .perm-action { font-size: 0.9rem; font-weight: 700; color: $text-main; }
+      line-height: 1.1; /* تم التصغير */
+      .perm-module { font-size: 0.6rem; color: $text-muted; text-transform: uppercase; font-weight: 600; } /* تم التصغير */
+      .perm-action { font-size: 0.8rem; font-weight: 700; color: $text-main; } /* تم التصغير */
     }
   }
 }
@@ -163,18 +165,18 @@ $danger: #dc3545;
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 15px;
-  margin-top: 40px;
-  padding-top: 20px;
+  gap: 8px; /* تم التصغير */
+  margin-top: 25px; /* تم التصغير */
+  padding-top: 12px; /* تم التصغير */
   border-top: 1px solid $border;
 
   .btn-ghost {
     background: transparent;
     border: 1px solid transparent;
     color: $text-muted;
-    padding: 10px 20px;
+    padding: 6px 15px; /* تم التصغير */
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: 4px; /* تم التصغير */
     cursor: pointer;
     &:hover { color: $text-main; background: #f1f1f1; }
   }
@@ -183,25 +185,25 @@ $danger: #dc3545;
     background: $gold;
     color: #fff;
     border: none;
-    padding: 12px 30px;
+    padding: 8px 20px; /* تم التصغير */
     font-weight: 700;
-    border-radius: 6px;
+    border-radius: 4px; /* تم التصغير */
     cursor: pointer;
     transition: 0.3s;
     
     &:hover:not(:disabled) { 
       background: darken($gold, 10%); 
-      box-shadow: 0 4px 12px rgba($gold, 0.3);
+      box-shadow: 0 2px 5px rgba($gold, 0.3); /* تم التصغير */
     }
     &:disabled { opacity: 0.6; cursor: not-allowed; }
   }
 }
 
 // --- Utilities ---
-.text-danger { color: $danger; font-size: 0.85rem; margin-top: 5px; display: block; }
+.text-danger { color: $danger; font-size: 0.75rem; margin-top: 3px; display: block; } /* تم التصغير */
 .text-gold { color: $gold; }
-.spinner-container { text-align: center; padding: 20px; }
+.spinner-container { text-align: center; padding: 10px; } /* تم التصغير */
 
 // --- Animation ---
-.page-fade-in { animation: fadeIn 0.5s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.page-fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
